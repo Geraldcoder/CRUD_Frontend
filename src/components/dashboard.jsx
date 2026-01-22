@@ -175,21 +175,6 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const token = localStorage.getItem('token')
 
-  useEffect(() => {
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
-    const decodeToken = () => {
-      const decoded = jwtDecode(token)
-      setUser(decoded)
-    }
-
-    decodeToken()
-    fetchData()
-  }, [token, navigate])
-
   const url = 'http://localhost:3000/tasks'
 
   const fetchData = async () => {
@@ -267,6 +252,21 @@ const Dashboard = () => {
     const updatedList = listItems.filter((item) => item._id !== id)
     setListItems(updatedList)
   }
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+
+    const decodeToken = () => {
+      const decoded = jwtDecode(token)
+      setUser(decoded)
+    }
+
+    decodeToken()
+    fetchData()
+  }, [token, navigate])
 
   return (
     <div>
