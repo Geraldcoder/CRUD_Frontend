@@ -1,14 +1,23 @@
+// import { jwtDecode } from 'jwt-decode'
 // import { useState, useEffect } from 'react'
 // import { useNavigate } from 'react-router-dom'
 
-// const dashboard = () => {
+// const Dashboard = () => {
 //   const [listItems, setListItems] = useState([])
 //   const [name, setName] = useState('')
 //   const [isEditing, setIsEditing] = useState(false)
 //   const [editID, setEditID] = useState(null)
+//   const [user, setUser] = useState(null)
 
 //   const navigate = useNavigate()
 //   const token = localStorage.getItem('token')
+
+//   useEffect(() => {
+//     if (token) {
+//       const decoded = jwtDecode(token)
+//       setUser(decoded)
+//     }
+//   }, [token])
 
 //   const url = 'http://localhost:3000/tasks'
 
@@ -20,22 +29,21 @@
 //         },
 //       })
 //       const data = await response.json()
-//       console.log(data)
 //       setListItems(data.tasks)
 //     } catch (error) {
 //       console.log('Error fetching data:', error)
 //     }
 //   }
 
+//   // redirect if no token
 //   useEffect(() => {
 //     if (!token) {
 //       navigate('/login')
+//       return
 //     }
-//   }, [token, navigate])
 
-//   useEffect(() => {
 //     fetchData()
-//   }, [])
+//   }, [token, navigate])
 
 //   const handleChange = (e) => {
 //     setName(e.target.value)
@@ -51,12 +59,12 @@
 //           'Content-Type': 'application/json',
 //           Authorization: `Bearer ${token}`,
 //         },
-//         body: JSON.stringify({ name: name }),
+//         body: JSON.stringify({ name }),
 //       })
 //       const data = await response.json()
 //       console.log(data)
 
-//       let updatedItems = listItems.map((item) =>
+//       const updatedItems = listItems.map((item) =>
 //         item._id === editID ? { ...item, name } : item,
 //       )
 //       setListItems(updatedItems)
@@ -66,60 +74,58 @@
 //       return
 //     }
 
-//     // const id = new Date().getTime().toString()
-//     setListItems([...listItems, { name: name }])
-//     setName('')
-
 //     const response = await fetch(url, {
 //       method: 'POST',
 //       headers: {
 //         'Content-Type': 'application/json',
 //         Authorization: `Bearer ${token}`,
 //       },
-//       body: JSON.stringify({ name: name }),
+//       body: JSON.stringify({ name }),
 //     })
 //     const data = await response.json()
 //     console.log(data)
+
+//     setListItems([...listItems, data.tasks]) // if your API returns created task
+//     setName('')
 //   }
 
 //   const editItem = (id) => {
-//     const updatedItems = listItems.find((item) => item._id === id)
+//     const updatedItem = listItems.find((item) => item._id === id)
 //     setIsEditing(true)
-//     setName(updatedItems.name)
+//     setName(updatedItem.name)
 //     setEditID(id)
 //   }
 
 //   const deleteItem = async (id) => {
-//     const response = await fetch(`${url}/${id}`, {
+//     await fetch(`${url}/${id}`, {
 //       method: 'DELETE',
 //       headers: {
-//         'content-type': 'application/json',
+//         'Content-Type': 'application/json',
 //         Authorization: `Bearer ${token}`,
 //       },
 //     })
-//     const data = await response.json()
-//     console.log(data)
 
-//     let upddatedList = listItems.filter((item) => item._id !== id)
-//     setListItems(upddatedList)
+//     const updatedList = listItems.filter((item) => item._id !== id)
+//     setListItems(updatedList)
 //   }
 
 //   return (
 //     <div>
 //       <div className='flex justify-between p-6 bg-gray-100'>
-//         <h3>Hello Gerald</h3>
+//         <h3>Hello {user?.name}</h3>
 //         <p
 //           className='px-3 rounded-sm bg-black text-white cursor-pointer'
 //           onClick={() => {
+//             localStorage.removeItem('token')
 //             navigate('/login')
-//             localStorage.removeItem('token', token)
 //           }}
 //         >
 //           Logout
 //         </p>
 //       </div>
+
 //       <div className='center-items'>
-//         <form action='' onSubmit={handleSubmit}>
+//         <form onSubmit={handleSubmit}>
 //           <input
 //             type='text'
 //             placeholder='Input name...'
@@ -131,34 +137,31 @@
 //             {isEditing ? 'Update' : 'Submit'}
 //           </button>
 //         </form>
-//         {listItems &&
-//           listItems.map((item) => {
-//             const { _id, name } = item
-//             return (
-//               <div key={_id} className='saved-items'>
-//                 <p>{name}</p>
-//                 <div>
-//                   <button className='edit-btn' onClick={() => editItem(_id)}>
-//                     <i className='fa-solid fa-pen-to-square'></i>
-//                   </button>
-//                   <button
-//                     className='delete-btn'
-//                     onClick={() => deleteItem(_id)}
-//                   >
-//                     <i className='fa-solid fa-trash'></i>
-//                   </button>
-//                 </div>
-//               </div>
-//             )
-//           })}
+
+//         {listItems.map((item) => (
+//           <div key={item._id} className='saved-items'>
+//             <p>{item.name}</p>
+//             <div>
+//               <button className='edit-btn' onClick={() => editItem(item._id)}>
+//                 <i className='fa-solid fa-pen-to-square'></i>
+//               </button>
+//               <button
+//                 className='delete-btn'
+//                 onClick={() => deleteItem(item._id)}
+//               >
+//                 <i className='fa-solid fa-trash'></i>
+//               </button>
+//             </div>
+//           </div>
+//         ))}
 //       </div>
 //     </div>
 //   )
 // }
 
-// export default dashboard
+// export default Dashboard
 
-import { jwtDecode } from 'jwt-decode'
+import jwtDecode from 'jwt-decode'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -173,11 +176,19 @@ const Dashboard = () => {
   const token = localStorage.getItem('token')
 
   useEffect(() => {
-    if (token) {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+
+    const decodeToken = () => {
       const decoded = jwtDecode(token)
       setUser(decoded)
     }
-  }, [token])
+
+    decodeToken()
+    fetchData()
+  }, [token, navigate])
 
   const url = 'http://localhost:3000/tasks'
 
@@ -194,16 +205,6 @@ const Dashboard = () => {
       console.log('Error fetching data:', error)
     }
   }
-
-  // redirect if no token
-  useEffect(() => {
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
-    fetchData()
-  }, [token, navigate])
 
   const handleChange = (e) => {
     setName(e.target.value)
@@ -222,7 +223,6 @@ const Dashboard = () => {
         body: JSON.stringify({ name }),
       })
       const data = await response.json()
-      console.log(data)
 
       const updatedItems = listItems.map((item) =>
         item._id === editID ? { ...item, name } : item,
@@ -243,9 +243,8 @@ const Dashboard = () => {
       body: JSON.stringify({ name }),
     })
     const data = await response.json()
-    console.log(data)
 
-    setListItems([...listItems, data.tasks]) // if your API returns created task
+    setListItems([...listItems, data.tasks])
     setName('')
   }
 
